@@ -8,10 +8,11 @@
 
 #include <frc/TimedRobot.h>
 #include <frc/smartdashboard/SendableChooser.h>
+#include <cameraserver/CameraServer.h>
+#include <frc/TimedRobot.h>
 
 class Robot : public frc::TimedRobot {
  public:
-  Robot();
   void RobotPeriodic() override;
   void AutonomousInit() override;
   void AutonomousPeriodic() override;
@@ -23,6 +24,9 @@ class Robot : public frc::TimedRobot {
   void TestPeriodic() override;
   void SimulationInit() override;
   void SimulationPeriodic() override;
+  Robot() {
+    frc::CameraServer::StartAutomaticCapture();
+  }
 
  private:
   frc::SendableChooser<std::string> m_chooser;
