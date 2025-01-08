@@ -1,78 +1,125 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+/*
+ * MIT License
+ *
+ * Copyright (c) PhotonVision
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #include "Robot.h"
 
-#include <frc/smartdashboard/SmartDashboard.h>
-#include <wpi/print.h>
+#include <iostream>
 
-Robot::Robot() {
-  m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
-  m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
-  frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
+#include <frc/simulation/BatterySim.h>
+#include <frc/simulation/RoboRioSim.h>
+
+void Robot::RobotInit() {}
+
+void Robot::RobotPeriodic() {
+  drivetrain.Periodic();
+  drivetrain.Log();
 }
-
-/**
- * This function is called every 20 ms, no matter the mode. Use
- * this for items like diagnostics that you want ran during disabled,
- * autonomous, teleoperated and test.
- *
- * <p> This runs after the mode specific periodic functions, but before
- * LiveWindow and SmartDashboard integrated updating.
- */
-void Robot::RobotPeriodic() {}
-
-/**
- * This autonomous (along with the chooser code above) shows how to select
- * between different autonomous modes using the dashboard. The sendable chooser
- * code works with the Java SmartDashboard. If you prefer the LabVIEW Dashboard,
- * remove all of the chooser code and uncomment the GetString line to get the
- * auto name from the text box below the Gyro.
- *
- * You can add additional auto modes by adding additional comparisons to the
- * if-else structure below with additional strings. If using the SendableChooser
- * make sure to add them to the chooser code above as well.
- */
-void Robot::AutonomousInit() {
-  m_autoSelected = m_chooser.GetSelected();
-  // m_autoSelected = SmartDashboard::GetString("Auto Selector",
-  //     kAutoNameDefault);
-  wpi::print("Auto selected: {}\n", m_autoSelected);
-
-  if (m_autoSelected == kAutoNameCustom) {
-    // Custom Auto goes here
-  } else {
-    // Default Auto goes here
-  }
-}
-
-void Robot::AutonomousPeriodic() {
-  if (m_autoSelected == kAutoNameCustom) {
-    // Custom Auto goes here
-  } else {
-    // Default Auto goes here
-  }
-}
-
-void Robot::TeleopInit() {}
-
-void Robot::TeleopPeriodic() {}
 
 void Robot::DisabledInit() {}
 
-void Robot::DisabledPeriodic() {}
+void Robot::DisabledPeriodic() { drivetrain.Stop(); }
+
+void Robot::DisabledExit() {}
+
+void Robot::AutonomousInit() {}
+
+void Robot::AutonomousPeriodic() {}
+
+void Robot::AutonomousExit() {}
+
+void Robot::TeleopInit() {
+  frc::Pose2d pose{1_m, 1_m, frc::Rotation2d{}};
+  drivetrain.ResetPose(pose, true);
+}
+
+void Robot::TeleopPeriodic() {
+  // Calculate drivetrain commands from Joystick values
+  auto forward =
+      -1.0 * controller.GetLeftY() * constants::Swerve::kMaxLinearSpeed;
+  auto strafe =
+      -1.0 * controller.GetLeftX() * constants::Swerve::kMaxLinearSpeed;
+  auto turn =
+      -1.0 * controller.GetRightX() * constants::Swerve::kMaxAngularSpeed;
+
+  bool targetVisible = false;
+  double targetYaw = 0.0;
+  auto results = camera.GetAllUnreadResults();
+  if (results.size() > 0) {
+    // Camera processed a new frame since last
+    // Get the last one in the list.
+    auto result = results[results.size() - 1];
+    if (result.HasTargets()) {
+      // At least one AprilTag was seen by the camera
+      for (auto& target : result.GetTargets()) {
+        if (target.GetFiducialId() == 7) {
+          // Found Tag 7, record its information
+          targetYaw = target.GetYaw();
+          targetVisible = true;
+        }
+      }
+    }
+  }
+
+  // Auto-align when requested
+  if (controller.GetAButton() && targetVisible) {
+    // Driver wants auto-alignment to tag 7
+    // And, tag 7 is in sight, so we can turn toward it.
+    // Override the driver's turn command with an automatic one that turns
+    // toward the tag.
+    turn =
+        -1.0 * targetYaw * VISION_TURN_kP * constants::Swerve::kMaxAngularSpeed;
+  }
+
+  // Command drivetrain motors based on target speeds
+  drivetrain.Drive(forward, strafe, turn);
+}
+
+void Robot::TeleopExit() {}
 
 void Robot::TestInit() {}
 
 void Robot::TestPeriodic() {}
 
-void Robot::SimulationInit() {}
+void Robot::TestExit() {}
 
-void Robot::SimulationPeriodic() {}
+void Robot::SimulationPeriodic() {
+  drivetrain.SimulationPeriodic();
+  vision.SimPeriodic(drivetrain.GetSimPose());
+
+  frc::Field2d& debugField = vision.GetSimDebugField();
+  debugField.GetObject("EstimatedRobot")->SetPose(drivetrain.GetPose());
+  debugField.GetObject("EstimatedRobotModules")
+      ->SetPoses(drivetrain.GetModulePoses());
+
+  units::ampere_t totalCurrent = drivetrain.GetCurrentDraw();
+  units::volt_t loadedBattVolts =
+      frc::sim::BatterySim::Calculate({totalCurrent});
+  // Using max(0.1, voltage) here isn't a *physically correct* solution,
+  // but it avoids problems with battery voltage measuring 0.
+  frc::sim::RoboRioSim::SetVInVoltage(units::math::max(0.1_V, loadedBattVolts));
+}
 
 #ifndef RUNNING_FRC_TESTS
-int main() {
-  return frc::StartRobot<Robot>();
-}
+int main() { return frc::StartRobot<Robot>(); }
 #endif
