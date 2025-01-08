@@ -6,11 +6,14 @@
 
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <wpi/print.h>
+#include <cameraserver/CameraServer.h>
+#include <frc/TimedRobot.h>
 
 Robot::Robot() {
   m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
   m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
   frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
+  frc::CameraServer::StartAutomaticCapture();
 }
 
 /**
@@ -70,6 +73,7 @@ void Robot::TestPeriodic() {}
 void Robot::SimulationInit() {}
 
 void Robot::SimulationPeriodic() {}
+
 
 #ifndef RUNNING_FRC_TESTS
 int main() {
