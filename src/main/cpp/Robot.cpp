@@ -22,49 +22,59 @@
  * SOFTWARE.
  */
 
-#include "Robot.h"
+#include "Robot.h"  // Include the header file for the Robot class
 
-#include <iostream>
+#include <iostream>  // Include the iostream library for input/output operations
 
-#include <frc/simulation/BatterySim.h>
-#include <frc/simulation/RoboRioSim.h>
+#include <frc/simulation/BatterySim.h>  // Include the BatterySim library from FRC
+#include <frc/simulation/RoboRioSim.h>  // Include the RoboRioSim library from FRC
 
+// Initialize the robot
 void Robot::RobotInit() {}
 
+// Periodic function called periodically during runtime
 void Robot::RobotPeriodic() {
-  drivetrain.Periodic();
-  drivetrain.Log();
+  drivetrain.Periodic();  // Call the periodic function of the drivetrain
+  drivetrain.Log();  // Log the current state of the drivetrain
 }
 
+// Initialize the robot in disabled mode
 void Robot::DisabledInit() {}
 
-void Robot::DisabledPeriodic() { drivetrain.Stop(); }
+// Periodic function called periodically during disabled mode
+void Robot::DisabledPeriodic() { drivetrain.Stop(); }  // Stop the drivetrain
 
+// Exit the disabled mode
 void Robot::DisabledExit() {}
 
+// Initialize the robot in autonomous mode
 void Robot::AutonomousInit() {}
 
+// Periodic function called periodically during autonomous mode
 void Robot::AutonomousPeriodic() {}
 
+// Exit the autonomous mode
 void Robot::AutonomousExit() {}
 
+// Initialize the robot in teleoperated mode
 void Robot::TeleopInit() {
-  frc::Pose2d pose{1_m, 1_m, frc::Rotation2d{}};
-  drivetrain.ResetPose(pose, true);
+  frc::Pose2d pose{1_m, 1_m, frc::Rotation2d{}};  // Set the initial pose of the robot
+  drivetrain.ResetPose(pose, true);  // Reset the pose of the drivetrain
 }
 
+// Periodic function called periodically during teleoperated mode
 void Robot::TeleopPeriodic() {
   // Calculate drivetrain commands from Joystick values
   auto forward =
-      -1.0 * controller.GetLeftY() * constants::Swerve::kMaxLinearSpeed;
+      -1.0 * controller.GetLeftY() * constants::Swerve::kMaxLinearSpeed;  // Get forward command
   auto strafe =
-      -1.0 * controller.GetLeftX() * constants::Swerve::kMaxLinearSpeed;
+      -1.0 * controller.GetLeftX() * constants::Swerve::kMaxLinearSpeed;  // Get strafe command
   auto turn =
-      -1.0 * controller.GetRightX() * constants::Swerve::kMaxAngularSpeed;
+      -1.0 * controller.GetRightX() * constants::Swerve::kMaxAngularSpeed;  // Get turn command
 
-  bool targetVisible = false;
-  double targetYaw = 0.0;
-  auto results = camera.GetAllUnreadResults();
+  bool targetVisible = false;  // Initialize target visibility
+  double targetYaw = 0.0;  // Initialize target yaw
+  auto results = camera.GetAllUnreadResults();  // Get all unread results from the camera
   if (results.size() > 0) {
     // Camera processed a new frame since last
     // Get the last one in the list.
@@ -95,31 +105,36 @@ void Robot::TeleopPeriodic() {
   drivetrain.Drive(forward, strafe, turn);
 }
 
+// Exit the teleoperated mode
 void Robot::TeleopExit() {}
 
+// Initialize the robot in test mode
 void Robot::TestInit() {}
 
+// Periodic function called periodically during test mode
 void Robot::TestPeriodic() {}
 
+// Exit the test mode
 void Robot::TestExit() {}
 
+// Periodic function called periodically during simulation
 void Robot::SimulationPeriodic() {
-  drivetrain.SimulationPeriodic();
-  vision.SimPeriodic(drivetrain.GetSimPose());
+  drivetrain.SimulationPeriodic();  // Call the simulation periodic function of the drivetrain
+  vision.SimPeriodic(drivetrain.GetSimPose());  // Call the simulation periodic function of the vision system
 
-  frc::Field2d& debugField = vision.GetSimDebugField();
-  debugField.GetObject("EstimatedRobot")->SetPose(drivetrain.GetPose());
+  frc::Field2d& debugField = vision.GetSimDebugField();  // Get the debug field for simulation
+  debugField.GetObject("EstimatedRobot")->SetPose(drivetrain.GetPose());  // Set the pose of the estimated robot
   debugField.GetObject("EstimatedRobotModules")
-      ->SetPoses(drivetrain.GetModulePoses());
+      ->SetPoses(drivetrain.GetModulePoses());  // Set the poses of the estimated robot modules
 
-  units::ampere_t totalCurrent = drivetrain.GetCurrentDraw();
+  units::ampere_t totalCurrent = drivetrain.GetCurrentDraw();  // Get the total current draw of the drivetrain
   units::volt_t loadedBattVolts =
-      frc::sim::BatterySim::Calculate({totalCurrent});
+      frc::sim::BatterySim::Calculate({totalCurrent});  // Calculate the loaded battery voltage
   // Using max(0.1, voltage) here isn't a *physically correct* solution,
   // but it avoids problems with battery voltage measuring 0.
-  frc::sim::RoboRioSim::SetVInVoltage(units::math::max(0.1_V, loadedBattVolts));
+  frc::sim::RoboRioSim::SetVInVoltage(units::math::max(0.1_V, loadedBattVolts));  // Set the input voltage of the RoboRio
 }
 
 #ifndef RUNNING_FRC_TESTS
-int main() { return frc::StartRobot<Robot>(); }
+int main() { return frc::StartRobot<Robot>(); }  // Start the robot
 #endif
