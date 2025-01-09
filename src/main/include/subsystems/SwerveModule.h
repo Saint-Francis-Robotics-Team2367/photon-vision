@@ -22,33 +22,47 @@
  * SOFTWARE.
  */
 
-#pragma once
+#pragma once  // Ensure the file is included only once during compilation
 
-#include <frc/Encoder.h>
-#include <frc/controller/PIDController.h>
-#include <frc/kinematics/SwerveModulePosition.h>
-#include <frc/kinematics/SwerveModuleState.h>
-#include <frc/motorcontrol/PWMSparkMax.h>
-#include <frc/simulation/EncoderSim.h>
-#include <units/current.h>
+#include <frc/Encoder.h>  // Include the Encoder class from FRC
+#include <frc/controller/PIDController.h>  // Include the PIDController class from FRC
+#include <frc/kinematics/SwerveModulePosition.h>  // Include the SwerveModulePosition class from FRC
+#include <frc/kinematics/SwerveModuleState.h>  // Include the SwerveModuleState class from FRC
+#include <frc/motorcontrol/PWMSparkMax.h>  // Include the PWMSparkMax class from FRC
+#include <frc/simulation/EncoderSim.h>  // Include the EncoderSim class from FRC
+#include <units/current.h>  // Include the units library for current
 
-#include "Constants.h"
+#include "Constants.h"  // Include the constants header file
 
+// Define the SwerveModule class
 class SwerveModule {
  public:
+  // Constructor for the SwerveModule class
   explicit SwerveModule(const constants::Swerve::ModuleConstants& consts);
+  // Periodic function called periodically during runtime
   void Periodic();
+  // Set the desired state of the swerve module
   void SetDesiredState(frc::SwerveModuleState newState, bool shouldBeOpenLoop,
                        bool steerInPlace);
+  // Get the absolute heading of the module
   frc::Rotation2d GetAbsoluteHeading() const;
+  // Get the current state of the swerve module
   frc::SwerveModuleState GetState() const;
+  // Get the current position of the swerve module
   frc::SwerveModulePosition GetPosition() const;
+  // Get the current voltage applied to the drive motor
   units::volt_t GetDriveVoltage() const;
+  // Get the current voltage applied to the steer motor
   units::volt_t GetSteerVoltage() const;
+  // Get the simulated current for the drive motor
   units::ampere_t GetDriveCurrentSim() const;
+  // Get the simulated current for the steer motor
   units::ampere_t GetSteerCurrentSim() const;
+  // Get the module constants
   constants::Swerve::ModuleConstants GetModuleConstants() const;
+  // Log the current state of the swerve module to the SmartDashboard
   void Log();
+  // Update the simulation values for the swerve module
   void SimulationUpdate(units::meter_t driveEncoderDist,
                         units::meters_per_second_t driveEncoderRate,
                         units::ampere_t driveCurrent,
@@ -57,25 +71,25 @@ class SwerveModule {
                         units::ampere_t steerCurrent);
 
  private:
-  const constants::Swerve::ModuleConstants moduleConstants;
+  const constants::Swerve::ModuleConstants moduleConstants;  // Store the module constants
 
-  frc::PWMSparkMax driveMotor;
-  frc::Encoder driveEncoder;
-  frc::PWMSparkMax steerMotor;
-  frc::Encoder steerEncoder;
+  frc::PWMSparkMax driveMotor;  // Drive motor
+  frc::Encoder driveEncoder;  // Drive encoder
+  frc::PWMSparkMax steerMotor;  // Steer motor
+  frc::Encoder steerEncoder;  // Steer encoder
 
-  frc::SwerveModuleState desiredState{};
-  bool openLoop{false};
+  frc::SwerveModuleState desiredState{};  // Desired state of the module
+  bool openLoop{false};  // Flag for open loop control
 
   frc::PIDController drivePIDController{constants::Swerve::kDriveKP,
                                         constants::Swerve::kDriveKI,
-                                        constants::Swerve::kDriveKD};
+                                        constants::Swerve::kDriveKD};  // PID controller for drive motor
   frc::PIDController steerPIDController{constants::Swerve::kSteerKP,
                                         constants::Swerve::kSteerKI,
-                                        constants::Swerve::kSteerKD};
+                                        constants::Swerve::kSteerKD};  // PID controller for steer motor
 
-  frc::sim::EncoderSim driveEncoderSim;
-  units::ampere_t driveCurrentSim{0};
-  frc::sim::EncoderSim steerEncoderSim;
-  units::ampere_t steerCurrentSim{0};
+  frc::sim::EncoderSim driveEncoderSim;  // Simulation for drive encoder
+  units::ampere_t driveCurrentSim{0};  // Simulated current for drive motor
+  frc::sim::EncoderSim steerEncoderSim;  // Simulation for steer encoder
+  units::ampere_t steerCurrentSim{0};  // Simulated current for steer motor
 };
