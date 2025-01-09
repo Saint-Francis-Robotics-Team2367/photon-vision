@@ -186,10 +186,16 @@ void SwerveModule::SimulationUpdate(
     units::radian_t steerEncoderDist,
     units::radians_per_second_t steerEncoderRate,
     units::ampere_t steerCurrent) {
+  // Set the simulated distance for the drive encoder
   driveEncoderSim.SetDistance(driveEncoderDist.to<double>());
+  // Set the simulated rate for the drive encoder
   driveEncoderSim.SetRate(driveEncoderRate.to<double>());
+  // Set the simulated current for the drive motor
   driveCurrentSim = driveCurrent;
+  // Set the simulated distance for the steer encoder
   steerEncoderSim.SetDistance(steerEncoderDist.to<double>());
+  // Set the simulated rate for the steer encoder
   steerEncoderSim.SetRate(steerEncoderRate.to<double>());
+  // Set the simulated current for the steer motor
   steerCurrentSim = steerCurrent;
 }
