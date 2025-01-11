@@ -45,12 +45,6 @@ SwerveModule::SwerveModule(int steerMotorID, int driveMotorID, int cancoderID)
   steerID = steerMotorID; // Store the steer motor ID
   driveID = driveMotorID; // Store the drive motor ID
 
-  // Set the distance per pulse for the drive encoder
-  driveEncoder.SetDistancePerPulse(constants::Swerve::kDriveDistPerPulse.to<double>());
-  
-  // Set the distance per pulse for the steer encoder
-  steerEncoder.SetDistancePerPulse(constants::Swerve::kSteerRadPerPulse.to<double>());
-  
   // Enable continuous input for the steer PID controller, allowing it to wrap around from -π to π
   steerPIDController.EnableContinuousInput(-std::numbers::pi, std::numbers::pi);
 }

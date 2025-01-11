@@ -31,6 +31,8 @@
 #include <frc/motorcontrol/PWMSparkMax.h>  // Include the PWMSparkMax class from FRC
 #include <frc/simulation/EncoderSim.h>  // Include the EncoderSim class from FRC
 #include <units/current.h>  // Include the units library for current
+#include <rev/CANSparkMax.h>  // Include the CANSparkMax class from REV Robotics
+#include <ctre/Phoenix.h>  // Include the Phoenix library from CTRE
 
 #include "Constants.h"  // Include the constants header file
 
@@ -39,6 +41,8 @@ class SwerveModule {
  public:
   // Constructor for the SwerveModule class
   explicit SwerveModule(const constants::Swerve::ModuleConstants& consts);
+  SwerveModule(int steerMotorID, int driveMotorID, int cancoderID); // New constructor
+
   // Periodic function called periodically during runtime
   void Periodic();
   // Set the desired state of the swerve module
@@ -73,10 +77,17 @@ class SwerveModule {
  private:
   const constants::Swerve::ModuleConstants moduleConstants;  // Store the module constants
 
-  frc::PWMSparkMax driveMotor;  // Drive motor
-  frc::Encoder driveEncoder;  // Drive encoder
-  frc::PWMSparkMax steerMotor;  // Steer motor
-  frc::Encoder steerEncoder;  // Steer encoder
+  // Old motor and encoder definitions (commented out to avoid redundancy)
+  // frc::PWMSparkMax driveMotor;  // Drive motor
+  // frc::Encoder driveEncoder;  // Drive encoder
+  // frc::PWMSparkMax steerMotor;  // Steer motor
+  // frc::Encoder steerEncoder;  // Steer encoder
+
+  // New motor and encoder definitions
+  std::unique_ptr<rev::CANSparkMax> steerMotor;  // Steer motor
+  TalonFX driveMotor;  // Drive motor
+  CANCoder steerEnc;  // Steer encoder
+  frc::PIDController steerCTR;  // Steer PID controller
 
   frc::SwerveModuleState desiredState{};  // Desired state of the module
   bool openLoop{false};  // Flag for open loop control
