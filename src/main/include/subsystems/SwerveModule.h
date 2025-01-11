@@ -31,8 +31,10 @@
 #include "frc/motorcontrol/PWMSparkMax.h" // Include the PWMSparkMax class from FRC
 #include "frc/simulation/EncoderSim.h" // Include the EncoderSim class from FRC
 #include "units/current.h" // Include the units library for current
-
-#include "rev/CANSparkMax.h"  // DOESN'T EXIST
+#include <rev/SparkClosedLoopController.h>
+#include <rev/SparkRelativeEncoder.h>
+#include <rev/SparkMax.h>
+#include <rev/config/SparkMaxConfig.h>
 #include "ctre/phoenix6/CANcoder.hpp"
 #include "ctre/phoenix6/TalonFX.hpp"
 
