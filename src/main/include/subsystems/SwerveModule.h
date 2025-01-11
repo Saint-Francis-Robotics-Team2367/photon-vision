@@ -24,7 +24,7 @@
 
 #pragma once  // Ensure the file is included only once during compilation
 
-#include <frc/Encoder.h>  // Include the Encoder class from FRC
+#include "frc/Encoder.h" // Include the Encoder class from FRC
 #include <frc/controller/PIDController.h>  // Include the PIDController class from FRC
 #include <frc/kinematics/SwerveModulePosition.h>  // Include the SwerveModulePosition class from FRC
 #include <frc/kinematics/SwerveModuleState.h>  // Include the SwerveModuleState class from FRC
