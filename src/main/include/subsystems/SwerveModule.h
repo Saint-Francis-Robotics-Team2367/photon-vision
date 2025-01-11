@@ -32,7 +32,8 @@
 #include <frc/simulation/EncoderSim.h>  // Include the EncoderSim class from FRC
 #include <units/current.h>  // Include the units library for current
 #include <rev/CANSparkMax.h>  // Include the CANSparkMax class from REV Robotics
-#include <ctre/Phoenix.h>  // Include the Phoenix library from CTRE
+#include "ctre/phoenix6/CANcoder.hpp"
+#include "ctre/phoenix6/TalonFX.hpp"
 
 #include "Constants.h"  // Include the constants header file
 
