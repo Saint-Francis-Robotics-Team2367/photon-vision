@@ -30,8 +30,12 @@
 #include <frc/MathUtil.h> // Include the MathUtil library from FRC
 #include <frc/RobotController.h> // Include the RobotController library from FRC
 #include <frc/smartdashboard/SmartDashboard.h> // Include the SmartDashboard library from FRC
-#include <rev/CANSparkMax.h> // Include the CANSparkMax library from REV Robotics
-#include <ctre/Phoenix.h> // Include the Phoenix library from CTRE
+#include <rev/SparkClosedLoopController.h>
+#include <rev/SparkRelativeEncoder.h>
+#include <rev/SparkMax.h>
+#include <rev/config/SparkMaxConfig.h> // Include the CANSparkMax library from REV Robotics
+#include "ctre/phoenix6/CANcoder.hpp"
+#include "ctre/phoenix6/TalonFX.hpp" // Include the Phoenix library from CTRE
 #include <frc/controller/PIDController.h> // Include the PIDController library from FRC
 //#include <frc/CANEncoder.h> // Include the CANEncoder library from FRC
 #include "frc/CAN.h" // Include the CAN library from FRC
