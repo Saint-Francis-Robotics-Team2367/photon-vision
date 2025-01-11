@@ -30,16 +30,20 @@
 #include <frc/MathUtil.h> // Include the MathUtil library from FRC
 #include <frc/RobotController.h> // Include the RobotController library from FRC
 #include <frc/smartdashboard/SmartDashboard.h> // Include the SmartDashboard library from FRC
+#include <rev/CANSparkMax.h> // Include the CANSparkMax library from REV Robotics
+#include <ctre/Phoenix.h> // Include the Phoenix library from CTRE
+#include <frc/controller/PIDController.h> // Include the PIDController library from FRC
+#include <frc/CANEncoder.h> // Include the CANEncoder library from FRC
 
 // Constructor for the SwerveModule class
-SwerveModule::SwerveModule(const constants::Swerve::ModuleConstants& consts)
-    : moduleConstants(consts), // Store the module constants
-      driveMotor(frc::PWMSparkMax{moduleConstants.driveMotorId}), // Initialize drive motor
-      driveEncoder(frc::Encoder{moduleConstants.driveEncoderA, moduleConstants.driveEncoderB}), // Initialize drive encoder
-      steerMotor(frc::PWMSparkMax{moduleConstants.steerMotorId}), // Initialize steer motor
-      steerEncoder(frc::Encoder{moduleConstants.steerEncoderA, moduleConstants.steerEncoderB}), // Initialize steer encoder
-      driveEncoderSim(driveEncoder), // Initialize drive encoder simulation
-      steerEncoderSim(steerEncoder) { // Initialize steer encoder simulation
+// This constructor initializes the swerve module with the given motor and encoder IDs
+SwerveModule::SwerveModule(int steerMotorID, int driveMotorID, int cancoderID)
+    : steerMotor(new rev::CANSparkMax(steerMotorID, rev::CANSparkMax::MotorType::kBrushless)), // Initialize steer motor
+      driveMotor(TalonFX(driveMotorID)), // Initialize drive motor
+      steerEnc(CANCoder(cancoderID)), // Initialize steer encoder
+      steerCTR(frc::PIDController(steerP, steerI, steerD)) { // Initialize steer PID controller
+  steerID = steerMotorID; // Store the steer motor ID
+  driveID = driveMotorID; // Store the drive motor ID
 
   // Set the distance per pulse for the drive encoder
   driveEncoder.SetDistancePerPulse(constants::Swerve::kDriveDistPerPulse.to<double>());
@@ -52,13 +56,14 @@ SwerveModule::SwerveModule(const constants::Swerve::ModuleConstants& consts)
 }
 
 // Periodic function called periodically during runtime
+// This function updates the motor voltages based on the desired state and PID calculations
 void SwerveModule::Periodic() {
   // Calculate the steering PID output voltage
   units::volt_t steerPID = units::volt_t{
-      steerPIDController.Calculate(GetAbsoluteHeading().Radians().to<double>(),
-                                   desiredState.angle.Radians().to<double>())};
+      steerCTR.Calculate(GetAbsoluteHeading().Radians().to<double>(),
+                         desiredState.angle.Radians().to<double>())};
   // Set the steering motor voltage based on the PID output
-  steerMotor.SetVoltage(steerPID);
+  steerMotor->SetVoltage(steerPID);
 
   // Calculate the feedforward voltage for the drive motor
   units::volt_t driveFF =
@@ -74,6 +79,7 @@ void SwerveModule::Periodic() {
 }
 
 // Set the desired state of the swerve module
+// This function sets the desired state of the module and optimizes it based on the current rotation
 void SwerveModule::SetDesiredState(frc::SwerveModuleState newState,
                                    bool shouldBeOpenLoop, bool steerInPlace) {
   // Get the current rotation of the module
@@ -85,56 +91,57 @@ void SwerveModule::SetDesiredState(frc::SwerveModuleState newState,
 }
 
 // Get the absolute heading of the module
+// This function returns the absolute heading of the module based on the steer encoder distance
 frc::Rotation2d SwerveModule::GetAbsoluteHeading() const {
-  // Return the absolute heading of the module based on the steer encoder distance
-  return frc::Rotation2d{units::radian_t{steerEncoder.GetDistance()}};
+  return frc::Rotation2d{units::radian_t{steerEnc.GetPosition()}};
 }
 
 // Get the current state of the swerve module
+// This function returns the current state of the module, including speed and heading
 frc::SwerveModuleState SwerveModule::GetState() const {
-  // Return the current state of the module, including speed and heading
   return frc::SwerveModuleState{driveEncoder.GetRate() * 1_mps,
                                 GetAbsoluteHeading()};
 }
 
 // Get the current position of the swerve module
+// This function returns the current position of the module, including distance and heading
 frc::SwerveModulePosition SwerveModule::GetPosition() const {
-  // Return the current position of the module, including distance and heading
   return frc::SwerveModulePosition{driveEncoder.GetDistance() * 1_m,
                                    GetAbsoluteHeading()};
 }
 
 // Get the current voltage applied to the drive motor
+// This function returns the current voltage applied to the drive motor
 units::volt_t SwerveModule::GetDriveVoltage() const {
-  // Return the current voltage applied to the drive motor
   return driveMotor.Get() * frc::RobotController::GetBatteryVoltage();
 }
 
 // Get the current voltage applied to the steer motor
+// This function returns the current voltage applied to the steer motor
 units::volt_t SwerveModule::GetSteerVoltage() const {
-  // Return the current voltage applied to the steer motor
-  return steerMotor.Get() * frc::RobotController::GetBatteryVoltage();
+  return steerMotor->Get() * frc::RobotController::GetBatteryVoltage();
 }
 
 // Get the simulated current for the drive motor
+// This function returns the simulated current for the drive motor
 units::ampere_t SwerveModule::GetDriveCurrentSim() const {
-  // Return the simulated current for the drive motor
   return driveCurrentSim;
 }
 
 // Get the simulated current for the steer motor
+// This function returns the simulated current for the steer motor
 units::ampere_t SwerveModule::GetSteerCurrentSim() const {
-  // Return the simulated current for the steer motor
   return steerCurrentSim;
 }
 
 // Get the module constants
+// This function returns the module constants
 constants::Swerve::ModuleConstants SwerveModule::GetModuleConstants() const {
-  // Return the module constants
   return moduleConstants;
 }
 
 // Log the current state of the swerve module to the SmartDashboard
+// This function logs various parameters of the swerve module to the SmartDashboard for debugging and monitoring
 void SwerveModule::Log() {
   // Get the current state of the swerve module, including speed and heading
   frc::SwerveModuleState state = GetState();
@@ -180,6 +187,7 @@ void SwerveModule::Log() {
 }
 
 // Update the simulation values for the swerve module
+// This function updates the simulation values for the drive and steer encoders and currents
 void SwerveModule::SimulationUpdate(
     units::meter_t driveEncoderDist,
     units::meters_per_second_t driveEncoderRate, units::ampere_t driveCurrent,
