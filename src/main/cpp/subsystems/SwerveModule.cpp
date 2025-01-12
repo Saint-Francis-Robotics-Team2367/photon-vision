@@ -35,6 +35,9 @@
 #include "subsystems/CAN_Coder.h" // Include the header file for the CAN_Coder class
 #include "subsystems/TalonFXMotor.h" // Include the header file for the TalonFXMotor class
 
+int steerID;
+int driveID;
+
 // Constructor for the SwerveModule class
 // This constructor initializes the swerve module with the given motor and encoder IDs
 SwerveModule::SwerveModule(int steerMotorID, int driveMotorID, int cancoderID)
@@ -106,9 +109,9 @@ frc::SwerveModulePosition SwerveModule::GetPosition() const {
 
 // Get the current voltage applied to the drive motor
 // This function returns the current voltage applied to the drive motor
-units::volt_t SwerveModule::GetDriveVoltage() const {
+/*units::volt_t SwerveModule::GetDriveVoltage() const {
   return driveMotor.Get() * frc::RobotController::GetBatteryVoltage();
-}
+}*/
 
 // Get the current voltage applied to the steer motor
 // This function returns the current voltage applied to the steer motor
