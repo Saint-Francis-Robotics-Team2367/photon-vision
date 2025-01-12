@@ -35,8 +35,10 @@
 #include <rev/SparkRelativeEncoder.h>
 #include <rev/SparkMax.h>
 #include <rev/config/SparkMaxConfig.h>
-#include "ctre/phoenix6/CANcoder.hpp"
-#include "ctre/phoenix6/TalonFX.hpp"
+#include <ctre/phoenix6/CANcoder.hpp>
+#include <ctre/phoenix6/CANcoder.hpp>
+#include "subsystems/TalonFXMotor.h"  // Include the TalonFXMotor class
+#include "subsystems/CAN_Coder.h"  // Include the CAN_Coder class
 
 #include "Constants.h"  // Include the constants header file
 
@@ -88,9 +90,9 @@ class SwerveModule {
   // frc::Encoder steerEncoder;  // Steer encoder
 
   // New motor and encoder definitions
-  std::unique_ptr<rev::CANSparkMax> steerMotor;  // Steer motor
-  TalonFX driveMotor;  // Drive motor
-  CANCoder steerEnc;  // Steer encoder
+  std::unique_ptr<rev::spark::SparkMax> steerMotor;  // Steer motor
+  TalonFXMotor driveMotor;  // Drive motor
+  CAN_Coder steerEnc;  // Steer encoder
   frc::PIDController steerCTR;  // Steer PID controller
 
   frc::SwerveModuleState desiredState{};  // Desired state of the module

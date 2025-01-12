@@ -29,6 +29,8 @@
 #include <frc/estimator/SwerveDrivePoseEstimator.h>  // Include the SwerveDrivePoseEstimator class from FRC
 #include <frc/kinematics/SwerveDriveKinematics.h>  // Include the SwerveDriveKinematics class from FRC
 #include <frc/simulation/ADXRS450_GyroSim.h>  // Include the ADXRS450 Gyro simulation class from FRC
+#include "subsystems/TalonFXMotor.h"  // Include the TalonFXMotor class
+#include "subsystems/CAN_Coder.h"  // Include the CAN_Coder class
 
 #include "SwerveDriveSim.h"  // Include the SwerveDriveSim header file
 #include "SwerveModule.h"  // Include the SwerveModule header file

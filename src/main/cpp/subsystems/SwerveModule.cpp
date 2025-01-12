@@ -30,20 +30,13 @@
 #include <frc/MathUtil.h> // Include the MathUtil library from FRC
 #include <frc/RobotController.h> // Include the RobotController library from FRC
 #include <frc/smartdashboard/SmartDashboard.h> // Include the SmartDashboard library from FRC
-#include <rev/SparkClosedLoopController.h>
-#include <rev/SparkRelativeEncoder.h>
-#include <rev/SparkMax.h>
-#include <rev/config/SparkMaxConfig.h> // Include the CANSparkMax library from REV Robotics
-#include "ctre/phoenix6/CANcoder.hpp"
-#include "ctre/phoenix6/TalonFX.hpp" // Include the Phoenix library from CTRE
 #include <frc/controller/PIDController.h> // Include the PIDController library from FRC
-//#include <frc/CANEncoder.h> // Include the CANEncoder library from FRC
 #include "frc/CAN.h" // Include the CAN library from FRC
 
 // Constructor for the SwerveModule class
 // This constructor initializes the swerve module with the given motor and encoder IDs
 SwerveModule::SwerveModule(int steerMotorID, int driveMotorID, int cancoderID)
-    : steerMotor(new rev::CANSparkMax(steerMotorID, rev::CANSparkMax::MotorType::kBrushless)), // Initialize steer motor
+    : steerMotor(new rev::spark::SparkMax(steerMotorID, rev::spark::SparkMax::MotorType::kBrushless)), // Initialize steer motor
       driveMotor(TalonFX(driveMotorID)), // Initialize drive motor
       steerEnc(CANCoder(cancoderID)), // Initialize steer encoder
       steerCTR(frc::PIDController(steerP, steerI, steerD)) { // Initialize steer PID controller
