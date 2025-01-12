@@ -32,13 +32,15 @@
 #include <frc/smartdashboard/SmartDashboard.h> // Include the SmartDashboard library from FRC
 #include <frc/controller/PIDController.h> // Include the PIDController library from FRC
 #include "frc/CAN.h" // Include the CAN library from FRC
+#include "subsystems/CAN_Coder.h" // Include the header file for the CAN_Coder class
+#include "subsystems/TalonFXMotor.h" // Include the header file for the TalonFXMotor class
 
 // Constructor for the SwerveModule class
 // This constructor initializes the swerve module with the given motor and encoder IDs
 SwerveModule::SwerveModule(int steerMotorID, int driveMotorID, int cancoderID)
     : steerMotor(new rev::spark::SparkMax(steerMotorID, rev::spark::SparkMax::MotorType::kBrushless)), // Initialize steer motor
-      driveMotor(TalonFX(driveMotorID)), // Initialize drive motor
-      steerEnc(CANCoder(cancoderID)), // Initialize steer encoder
+      driveMotor(TalonFXMotor(driveMotorID)), // Initialize drive motor
+      steerEnc(CAN_Coder(cancoderID)), // Initialize steer encoder
       steerCTR(frc::PIDController(steerP, steerI, steerD)) { // Initialize steer PID controller
   steerID = steerMotorID; // Store the steer motor ID
   driveID = driveMotorID; // Store the drive motor ID
@@ -67,7 +69,7 @@ void SwerveModule::Periodic() {
         driveEncoder.GetRate(), desiredState.speed.to<double>())};
   }
   // Set the drive motor voltage based on the sum of feedforward and PID output
-  driveMotor.SetVoltage(driveFF + drivePID);
+  driveMotor.motor.SetVoltage(driveFF + drivePID);
 }
 
 // Set the desired state of the swerve module
@@ -85,7 +87,7 @@ void SwerveModule::SetDesiredState(frc::SwerveModuleState newState,
 // Get the absolute heading of the module
 // This function returns the absolute heading of the module based on the steer encoder distance
 frc::Rotation2d SwerveModule::GetAbsoluteHeading() const {
-  return frc::Rotation2d{units::radian_t{steerEnc.GetPosition()}};
+  return steerEnc.getPosition();
 }
 
 // Get the current state of the swerve module
